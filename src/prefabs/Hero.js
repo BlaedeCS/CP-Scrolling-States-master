@@ -21,6 +21,7 @@ class Hero extends Phaser.Physics.Arcade.Sprite {
             swing: new SwingState(),
             dash: new DashState(),
             hurt: new HurtState(),
+            circular: new CircularState(),
         }, [scene, this])   // pass these as arguments to maintain scene/object context in the FSM
     }
 }
@@ -37,6 +38,7 @@ class IdleState extends State {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys
         const HKey = scene.keys.HKey
+        const FKey = scene.keys.FKey
 
         // transition to swing if pressing space
         if(Phaser.Input.Keyboard.JustDown(space)) {
@@ -47,6 +49,12 @@ class IdleState extends State {
         // transition to dash if pressing shift
         if(Phaser.Input.Keyboard.JustDown(shift)) {
             this.stateMachine.transition('dash')
+            return
+        }
+
+        // transition to circular if pressing F
+        if(Phaser.Input.Keyboard.JustDown(FKey)) {
+            this.stateMachine.transition('circular')
             return
         }
 
@@ -69,6 +77,7 @@ class MoveState extends State {
         // use destructuring to make a local copy of the keyboard object
         const { left, right, up, down, space, shift } = scene.keys
         const HKey = scene.keys.HKey
+        const FKey = scene.keys.FKey
 
         // transition to swing if pressing space
         if(Phaser.Input.Keyboard.JustDown(space)) {
@@ -85,6 +94,12 @@ class MoveState extends State {
         // hurt if H key input (just for demo purposes)
         if(Phaser.Input.Keyboard.JustDown(HKey)) {
             this.stateMachine.transition('hurt')
+            return
+        }
+
+        // transition to circular if pressing F
+        if(Phaser.Input.Keyboard.JustDown(FKey)) {
+            this.stateMachine.transition('circular')
             return
         }
 
@@ -183,4 +198,19 @@ class HurtState extends State {
             this.stateMachine.transition('idle')
         })
     }
+}
+
+class CircularState extends State {
+    enter(scene, hero) {
+        //hero.setTint(0x0000FF)
+        hero.setVelocity(0)
+        hero.anims.play(`circular-attack`)
+        hero.once('animationcomplete', () => {
+            this.stateMachine.transition('idle')
+            //hero.setTint(0xFFFFFF)
+        })
+        scene.cameras.main.shake(450,0.01) // Prefer here to at the end of the state
+    }
+
+    
 }
